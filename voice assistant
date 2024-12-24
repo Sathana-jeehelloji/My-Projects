@@ -1,0 +1,65 @@
+import speech_recognition as sr
+import pyttsx3
+import datetime
+import webbrowser
+
+# Initialize the recognizer and text-to-speech engine
+recognizer = sr.Recognizer()
+engine = pyttsx3.init()
+
+def speak(text):
+    """Convert text to speech."""
+    engine.say(text)
+    engine.runAndWait()
+
+def listen():
+    """Capture voice input."""
+    try:
+        with sr.Microphone() as source:
+            print("Listening...")
+            recognizer.adjust_for_ambient_noise(source, duration=1)
+            audio = recognizer.listen(source)
+            command = recognizer.recognize_google(audio).lower()
+            print(f"You said: {command}")
+            return command
+    except sr.UnknownValueError:
+        speak("Sorry, I didn't catch that. Please repeat.")
+        return None
+    except sr.RequestError:
+        speak("There seems to be an issue with the recognition service. Please try again later.")
+        return None
+
+def respond(command):
+    """Respond to commands."""
+    if "hello" in command:
+        speak("Hello! How can I assist you today?")
+    elif "time" in command:
+        current_time = datetime.datetime.now().strftime("%H:%M")
+        speak(f"The current time is {current_time}")
+    elif "date" in command:
+        today = datetime.datetime.now().strftime("%B %d, %Y")
+        speak(f"Today's date is {today}")
+    elif "search" in command:
+        speak("What should I search for?")
+        query = listen()
+        if query:
+            speak(f"Searching the web for {query}")
+            webbrowser.open(f"https://www.google.com/search?q={query}")
+    elif "goodbye" in command or "stop" in command:
+        speak("Goodbye! Have a great day.")
+        return False
+    else:
+        speak("I'm not sure how to help with that.")
+    return True
+
+def main():
+    """Main program loop."""
+    speak("Voice assistant activated. How can I help you?")
+    while True:
+        command = listen()
+        if command:
+            if not respond(command):
+                break
+
+if __name__ == "__main__":
+    main()
