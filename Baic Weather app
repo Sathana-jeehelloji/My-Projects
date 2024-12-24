@@ -1,0 +1,62 @@
+import requests
+
+# API Key and Base URL
+API_KEY = "6c5dd464213c4375ae8193432242212"  # Your API Key
+BASE_URL = "http://api.weatherapi.com/v1/current.json"
+
+def fetch_weather(location):
+    """
+    Fetch weather data for a given location.
+    :param location: City name or ZIP code
+    :return: JSON response containing weather data
+    """
+    try:
+        # API request
+        response = requests.get(BASE_URL, params={
+            "key": API_KEY,
+            "q": location,
+            "aqi": "yes"  # Include air quality information
+        })
+        response.raise_for_status()  # Raise exception for HTTP errors
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
+        return None
+
+def display_weather(data):
+    """
+    Display weather information from the API response.
+    :param data: JSON response containing weather data
+    """
+    if "location" in data:
+        location = data["location"]["name"]
+        region = data["location"]["region"]
+        country = data["location"]["country"]
+        temperature_c = data["current"]["temp_c"]
+        condition = data["current"]["condition"]["text"]
+        humidity = data["current"]["humidity"]
+        wind_speed = data["current"]["wind_kph"]
+        air_quality = data["current"]["air_quality"]
+
+        print(f"\n--- Weather Information ---")
+        print(f"Location: {location}, {region}, {country}")
+        print(f"Temperature: {temperature_c}°C")
+        print(f"Condition: {condition}")
+        print(f"Humidity: {humidity}%")
+        print(f"Wind Speed: {wind_speed} kph")
+        print(f"Air Quality (US EPA Index): {air_quality['us-epa-index']}")
+    else:
+        print("Error: Could not fetch weather data. Please check your input or API key.")
+
+def main():
+    """
+    Main function to run the weather app.
+    """
+    print("Welcome to the Weather App!")
+    location = input("Enter a city name or ZIP code: ").strip()
+    weather_data = fetch_weather(location)
+    if weather_data:
+        display_weather(weather_data)
+
+if __name__ == "__main__":
+    main()
